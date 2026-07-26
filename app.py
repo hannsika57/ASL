@@ -63,10 +63,14 @@ RTC_CONFIGURATION = RTCConfiguration(
                 "username": "openrelayproject",
                 "credential": "openrelayproject",
             },
-        ]
+        ],
+        # Force ICE to skip direct/STUN (UDP) attempts entirely and go straight to the
+        # TURN relay over TCP. Streamlit Cloud's network blocks outbound UDP, so without
+        # this, every connection attempt wastes time retrying a doomed UDP path before
+        # (sometimes never) falling back to TURN.
+        "iceTransportPolicy": "relay",
     }
 )
-
 
 @st.cache_resource
 def load_assets():
