@@ -417,19 +417,32 @@ class SignProcessor(VideoProcessorBase):
         self.lock = threading.Lock()
         self.current_symbol = " "
         self.skeleton_img = None
+        self.frame_count = 0
+        self.hand_count = 0
+        self.last_error = None
 
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
         img = cv2.flip(img, 1)
+        with self.lock:
+            self.frame_count += 1
         try:
             hands = self.hd.findHands(img, draw=False, flipType=True)
             img_copy = np.array(img)
             if hands and hands[0]:
+                with self.lock:
+                    self.hand_count += 1
                 hand = hands[0][0]
                 x, y, w, h = hand['bbox']
                 crop = img_copy[y - OFFSET:y + h + OFFSET, x - OFFSET:x + w + OFFSET]
                 white = cv2.imread(WHITE_IMG_PATH)
-                if white is not None and crop.size != 0:
+                if white is None:
+                    with self.lock:
+                        self.last_error = f"white.jpg failed to load (cv2.imread returned None)"
+                elif crop.size == 0:
+                    with self.lock:
+                        self.last_error = "hand crop was empty (bbox near frame edge)"
+                else:
                     handz = self.hd2.findHands(crop, draw=False, flipType=True)
                     if handz and handz[0]:
                         handmap = handz[0][0]
@@ -441,7 +454,13 @@ class SignProcessor(VideoProcessorBase):
                         with self.lock:
                             self.current_symbol = symbol
                             self.skeleton_img = white
+                            self.last_error = None
+                    else:
+                        with self.lock:
+                            self.last_error = "hd2 (cropped re-detect) found no hand"
         except Exception as e:
+            with self.lock:
+                self.last_error = f"{type(e).__name__}: {e}"
             print("processing error:", e)
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
@@ -481,6 +500,14 @@ def live_panel():
 
     if skel is not None:
         skeleton_placeholder.image(cv2.cvtColor(skel, cv2.COLOR_BGR2RGB), use_container_width=True)
+
+    # --- Diagnostics: temporary, helps pinpoint why detection may not be working ---
+    if ctx.video_processor:
+        with ctx.video_processor.lock:
+            fc = ctx.video_processor.frame_count
+            hc = ctx.video_processor.hand_count
+            le = ctx.video_processor.last_error
+        st.caption(f"🔍 Frames processed: {fc} · Hands detected: {hc} · Last error: {le or 'none'}")
 
     c1, c2 = st.columns([1, 3])
     with c1:
