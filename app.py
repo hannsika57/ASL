@@ -496,11 +496,7 @@ with col1:
         media_stream_constraints={"video": True, "audio": False},
     )
 
-with col2:
-    st.markdown("<div class='card-title'>Hand Landmarks</div>", unsafe_allow_html=True)
-
 st.markdown("<hr/>", unsafe_allow_html=True)
-
 
 @st.fragment(run_every=0.15)
 def live_panel():
@@ -511,10 +507,11 @@ def live_panel():
             current_symbol = ctx.video_processor.current_symbol
             skel = ctx.video_processor.skeleton_img
 
-    if skel is not None:
-        with col2:
+    landmarks_col1, landmarks_col2 = st.columns(2, gap="large")
+    with landmarks_col2:
+        st.markdown("<div class='card-title'>Hand Landmarks</div>", unsafe_allow_html=True)
+        if skel is not None:
             st.image(cv2.cvtColor(skel, cv2.COLOR_BGR2RGB), use_container_width=True)
-
     # --- Diagnostics: temporary, helps pinpoint why detection may not be working ---
     if ctx.video_processor:
         with ctx.video_processor.lock:
