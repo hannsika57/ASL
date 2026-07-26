@@ -446,9 +446,14 @@ class SignProcessor(VideoProcessorBase):
             if hands and hands[0]:
                 with self.lock:
                     self.hand_count += 1
-                hand = hands[0][0]
+               hand = hands[0][0]
                 x, y, w, h = hand['bbox']
-                crop = img_copy[y - OFFSET:y + h + OFFSET, x - OFFSET:x + w + OFFSET]
+                img_h, img_w = img_copy.shape[:2]
+                y1 = max(0, y - OFFSET)
+                y2 = min(img_h, y + h + OFFSET)
+                x1 = max(0, x - OFFSET)
+                x2 = min(img_w, x + w + OFFSET)
+                crop = img_copy[y1:y2, x1:x2]
                 white = cv2.imread(WHITE_IMG_PATH)
                 if white is None:
                     with self.lock:
