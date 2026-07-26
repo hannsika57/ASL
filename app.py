@@ -53,21 +53,30 @@ OFFSET = 29
 RTC_CONFIGURATION = RTCConfiguration(
     {
         "iceServers": [
-            {"urls": ["stun:stun.l.google.com:19302"]},
+            {"urls": ["stun:stun.relay.metered.ca:80"]},
             {
-                "urls": [
-                    "turn:openrelay.metered.ca:80?transport=tcp",
-                    "turn:openrelay.metered.ca:443?transport=tcp",
-                    "turns:openrelay.metered.ca:443?transport=tcp",
-                ],
-                "username": "openrelayproject",
-                "credential": "openrelayproject",
+                "urls": ["turn:global.relay.metered.ca:80"],
+                "username": "be5dbfe0e09a576c2ded694b",
+                "credential": "xvaQ9kkPjBLUpHDR",
+            },
+            {
+                "urls": ["turn:global.relay.metered.ca:80?transport=tcp"],
+                "username": "be5dbfe0e09a576c2ded694b",
+                "credential": "xvaQ9kkPjBLUpHDR",
+            },
+            {
+                "urls": ["turn:global.relay.metered.ca:443"],
+                "username": "be5dbfe0e09a576c2ded694b",
+                "credential": "xvaQ9kkPjBLUpHDR",
+            },
+            {
+                "urls": ["turns:global.relay.metered.ca:443?transport=tcp"],
+                "username": "be5dbfe0e09a576c2ded694b",
+                "credential": "xvaQ9kkPjBLUpHDR",
             },
         ],
-        # Force ICE to skip direct/STUN (UDP) attempts entirely and go straight to the
-        # TURN relay over TCP. Streamlit Cloud's network blocks outbound UDP, so without
-        # this, every connection attempt wastes time retrying a doomed UDP path before
-        # (sometimes never) falling back to TURN.
+        # Force ICE to skip direct/STUN (UDP) attempts and go straight to the TURN
+        # relay, since Streamlit Cloud's network blocks outbound UDP.
         "iceTransportPolicy": "relay",
     }
 )
