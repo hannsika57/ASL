@@ -2,7 +2,7 @@ streamlit>=1.33
 streamlit-webrtc
 av
 opencv-python-headless
-keras
-tensorflow
+tensorflow==2.15.0
+keras==2.15.0
 cvzone
 numpy
