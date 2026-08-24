@@ -1,9 +1,9 @@
-streamlit>=1.33
+streamlit>=1.51
 streamlit-webrtc
 av
 opencv-python-headless
 tensorflow==2.15.0
 keras==2.15.0
 cvzone
-numpy
+numpy<2
 mediapipe
