@@ -452,7 +452,7 @@ class SignProcessor(VideoProcessorBase):
             if hands and hands[0]:
                 with self.lock:
                     self.hand_count += 1
-               hand = hands[0][0]
+                hand = hands[0][0]
                 x, y, w, h = hand['bbox']
                 img_h, img_w = img_copy.shape[:2]
                 y1 = max(0, y - OFFSET)
