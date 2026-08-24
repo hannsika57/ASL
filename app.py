@@ -1,7 +1,7 @@
 import json
 import math
 import threading
-
+import os 
 import av
 import cv2
 import numpy as np
@@ -50,37 +50,43 @@ MODEL_PATH = "cnn8grps_rad1_model.h5"
 WHITE_IMG_PATH = "white.jpg"
 OFFSET = 29
 
+TURN_USERNAME = os.getenv("TURN_USERNAME")
+TURN_CREDENTIAL = os.getenv("TURN_CREDENTIAL")
+
+ice_servers = [
+    {"urls": ["stun:stun.relay.metered.ca:80"]}
+]
+
+if TURN_USERNAME and TURN_CREDENTIAL:
+    ice_servers.extend([
+        {
+            "urls": ["turn:global.relay.metered.ca:80"],
+            "username": TURN_USERNAME,
+            "credential": TURN_CREDENTIAL,
+        },
+        {
+            "urls": ["turn:global.relay.metered.ca:80?transport=tcp"],
+            "username": TURN_USERNAME,
+            "credential": TURN_CREDENTIAL,
+        },
+        {
+            "urls": ["turn:global.relay.metered.ca:443"],
+            "username": TURN_USERNAME,
+            "credential": TURN_CREDENTIAL,
+        },
+        {
+            "urls": ["turns:global.relay.metered.ca:443?transport=tcp"],
+            "username": TURN_USERNAME,
+            "credential": TURN_CREDENTIAL,
+        },
+    ])
+
 RTC_CONFIGURATION = RTCConfiguration(
     {
-        "iceServers": [
-            {"urls": ["stun:stun.relay.metered.ca:80"]},
-            {
-                "urls": ["turn:global.relay.metered.ca:80"],
-                "username": "be5dbfe0e09a576c2ded694b",
-                "credential": "xvaQ9kkPjBLUpHDR",
-            },
-            {
-                "urls": ["turn:global.relay.metered.ca:80?transport=tcp"],
-                "username": "be5dbfe0e09a576c2ded694b",
-                "credential": "xvaQ9kkPjBLUpHDR",
-            },
-            {
-                "urls": ["turn:global.relay.metered.ca:443"],
-                "username": "be5dbfe0e09a576c2ded694b",
-                "credential": "xvaQ9kkPjBLUpHDR",
-            },
-            {
-                "urls": ["turns:global.relay.metered.ca:443?transport=tcp"],
-                "username": "be5dbfe0e09a576c2ded694b",
-                "credential": "xvaQ9kkPjBLUpHDR",
-            },
-        ],
-        # Force ICE to skip direct/STUN (UDP) attempts and go straight to the TURN
-        # relay, since Streamlit Cloud's network blocks outbound UDP.
-        "iceTransportPolicy": "relay",
+        "iceServers": ice_servers,
+        "iceTransportPolicy": "relay" if TURN_USERNAME and TURN_CREDENTIAL else "all",
     }
 )
-
 @st.cache_resource
 def load_assets():
     return load_model(MODEL_PATH)
